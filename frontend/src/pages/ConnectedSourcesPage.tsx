@@ -225,9 +225,9 @@ export const ConnectedSourcesPage: React.FC<ConnectedSourcesPageProps> = ({
                 <p>
                   Authorize the Vaani Discord Application into your server with OAuth2 bot permissions (View Channels, Read Message History, Moderate Members).
                 </p>
-                <div className="pt-2 flex items-center gap-3">
+                <div className="pt-2 flex flex-wrap items-center gap-3">
                   <a
-                    href="https://discord.com/oauth2/authorize?client_id=1234567890&scope=bot&permissions=268435456"
+                    href={`https://discord.com/oauth2/authorize?client_id=${(import.meta.env.VITE_DISCORD_CLIENT_ID as string) || '1234567890'}&scope=bot&permissions=268435456`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-xl font-semibold shadow-2xs transition-colors"
@@ -242,6 +242,11 @@ export const ConnectedSourcesPage: React.FC<ConnectedSourcesPageProps> = ({
                     <span>Verify Server Integration</span>
                   </button>
                 </div>
+                {(!(import.meta.env.VITE_DISCORD_CLIENT_ID as string) || (import.meta.env.VITE_DISCORD_CLIENT_ID as string) === '1234567890') && (
+                  <p className="text-xs text-[#717163]">
+                    Note: To invite your team's live Discord bot, replace the dummy Client ID with your bot's <strong>Application ID</strong> from the Discord Developer Portal (or set <code className="bg-[#E4E4DC] px-1 py-0.5 rounded text-[11px]">VITE_DISCORD_CLIENT_ID</code> in <code className="bg-[#E4E4DC] px-1 py-0.5 rounded text-[11px]">frontend/.env</code>).
+                  </p>
+                )}
               </div>
             )}
 
