@@ -19,6 +19,7 @@ import { ConnectedSourcesPage } from './pages/ConnectedSourcesPage';
 import { RepeatTargetsPage } from './pages/RepeatTargetsPage';
 import { TryItPage } from './pages/TryItPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { MessageReviewModal } from './components/MessageReviewModal';
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
@@ -117,7 +118,6 @@ export function App() {
 
   const handleSelectMessageFromElsewhere = (msg: FlaggedMessage) => {
     setSelectedMessage(msg);
-    setCurrentTab('feed');
   };
 
   const handleSelectTargetFilter = (targetUser: string) => {
@@ -236,6 +236,15 @@ export function App() {
             />
           )}
         </main>
+
+        {/* Global Main Review Modal */}
+        {selectedMessage && (
+          <MessageReviewModal
+            message={selectedMessage}
+            onClose={() => setSelectedMessage(null)}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        )}
 
         <Footer />
       </div>

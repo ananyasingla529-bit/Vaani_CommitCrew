@@ -79,6 +79,16 @@ A default `.env` is pre-configured with `MOCK_MODE=True` so that the full consol
 # backend/.env
 MOCK_MODE=True
 
+# LLM Providers (Primary: Google Gemini, Secondary Fallback: Groq)
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-1.5-flash
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# LLM Daily Call Budget & Rate Limiter
+LLM_DAILY_BUDGET=500
+RATE_LIMIT_PER_MINUTE=60
+
 # Telegram Bot Credentials (Optional when MOCK_MODE=True)
 TELEGRAM_BOT_TOKEN=7192837461:AAFk9102834710928347_DEMO
 TELEGRAM_MODERATOR_CHAT_ID=984729182
@@ -94,6 +104,41 @@ DATABASE_URL=sqlite:///./vaani.db
 PORT=8000
 HOST=0.0.0.0
 ```
+
+### How to Get LLM API Keys
+
+Vaani utilizes a resilient two-tier architecture:
+- **Tier 1**: Instant lexicon & rule-based engine. Clearly safe messages are immediately validated with **zero LLM calls** and zero API cost.
+- **Tier 2**: Context-aware LLM chain (Google Gemini &rarr; Groq Llama &rarr; Rule Fallback) for nuanced Indic slang, subtle polite bullying, and threat verification.
+
+#### 1. Google Gemini API Key (Primary Provider — Free Tier)
+1. Go to [Google AI Studio](https://aistudio.google.com/).
+2. Sign in with your Google account.
+3. Click **Get API key** &rarr; **Create API key in new project**.
+4. Copy the key and paste it as `GEMINI_API_KEY=...` in `backend/.env`.
+5. Set `MOCK_MODE=False` in `backend/.env`.
+
+#### 2. Groq API Key (Secondary Fallback Provider — High Speed Llama 3.3)
+1. Go to the [Groq Cloud Console](https://console.groq.com/).
+2. Sign up or log in.
+3. Navigate to **API Keys** in the left sidebar and click **Create API Key**.
+4. Copy the generated key and paste it as `GROQ_API_KEY=...` in `backend/.env`.
+
+> [!NOTE]
+> If any API call fails, encounters a rate limit, or exceeds `LLM_DAILY_BUDGET` (default 500), Vaani automatically falls back to the deterministic local rule engine without throwing any user-facing errors.
+
+---
+
+## Evaluation Benchmark Suite
+
+Vaani contains a labeled dataset of 89 test cases across Devanagari, Gurmukhi, Romanized Hindi/Punjabi, Hinglish, leetspeak, false-positive metaphors, polite bullying, and self-harm hints in `backend/eval/eval_set.csv`.
+
+To run the offline evaluation benchmark:
+```bash
+python backend/eval/run_eval.py
+```
+This prints precision, recall, F1-score, per-category, and per-language breakdowns, and exports `backend/eval/latest_summary.json`. The latest results are also exposed via REST at `GET /eval/summary`.
+
 
 ---
 

@@ -8,10 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from datetime import datetime, timezone
 import os
-from dotenv import load_dotenv
 
-# Load environment configuration
-load_dotenv()
+try:
+    from dotenv import load_dotenv  # type: ignore
+    dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path=dotenv_path)
+    else:
+        load_dotenv()
+except (ImportError, PermissionError):
+    pass
 
 import database as db
 from models import (
@@ -32,6 +38,8 @@ from services.actions import execute_moderator_action
 from services.source_verifier import create_and_verify_source
 from services.security import mask_token, encrypt_token, decrypt_token
 from connectors.discord_service import start_discord_gateway, stop_discord_gateway
+from routers.brain import router as brain_router
+from routers.ops import ops_router
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -56,8 +64,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Hard Rule 5: Include ops router with one added line
-from routers.ops import ops_router; app.include_router(ops_router)
+# Include brain router and operations router
+app.include_router(brain_router)
+app.include_router(ops_router)
 
 
 @app.on_event("startup")
@@ -224,7 +233,7 @@ def classify_endpoint(payload: ClassifyRequest):
     Accepts arbitrary text in Hindi, Hinglish, Punjabi, or English.
     Returns normalized transliteration, category, severity, and rationale.
     """
-    result = classify_text(payload.text, payload.target_user)
+    result = classify_text(payload.text, payload.target_user, payload.context)
     return result
 
 
