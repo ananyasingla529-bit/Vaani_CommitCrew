@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, CheckCircle, RefreshCw, GitBranch, LogOut, LogIn } from 'lucide-react';
+import { ShieldAlert, CheckCircle, RefreshCw, GitBranch } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
@@ -7,6 +7,8 @@ interface HeaderProps {
   urgentCount?: number;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  activeBranch?: string;
+  // Kept for backward compatibility if passed
   userEmail?: string;
   userRole?: string;
   isAuthenticated?: boolean;
@@ -20,11 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   urgentCount = 0,
   onRefresh,
   isRefreshing = false,
-  userEmail = 'moderator@vaani.org',
-  userRole = 'Community Admin',
-  isAuthenticated = true,
-  onLogout,
-  onSignInClick,
+  activeBranch = 'main',
 }) => {
   return (
     <header className="h-18 border-b border-[#D0C7B3]/70 bg-white/80 backdrop-blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
@@ -37,7 +35,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Active Branch Pill */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D0C7B3] bg-[#F1F1EC] text-[#434428] text-xs font-mono font-medium shadow-2xs">
           <GitBranch className="w-3.5 h-3.5 text-[#939474]" />
-          <span>Frontend</span>
+          <span>{activeBranch}</span>
         </div>
 
         {/* Mock Mode Pill */}
