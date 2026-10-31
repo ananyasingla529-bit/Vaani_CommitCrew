@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, CheckCircle, RefreshCw } from 'lucide-react';
+import { ShieldAlert, CheckCircle, RefreshCw, GitBranch } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
@@ -7,6 +7,13 @@ interface HeaderProps {
   urgentCount?: number;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  activeBranch?: string;
+  // Kept for backward compatibility if passed
+  userEmail?: string;
+  userRole?: string;
+  isAuthenticated?: boolean;
+  onLogout?: () => void;
+  onSignInClick?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,25 +22,32 @@ export const Header: React.FC<HeaderProps> = ({
   urgentCount = 0,
   onRefresh,
   isRefreshing = false,
+  activeBranch = 'main',
 }) => {
   return (
-    <header className="h-16 border-b border-slate-200 bg-white/90 backdrop-blur-xs px-6 flex items-center justify-between shrink-0 sticky top-0 z-10">
+    <header className="h-18 border-b border-[#D0C7B3]/70 bg-white/80 backdrop-blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
       <div>
-        <h1 className="text-lg font-semibold text-slate-900 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-slate-500 font-normal">{subtitle}</p>}
+        <h1 className="text-2xl font-extrabold text-[#292728] tracking-tight">{title}</h1>
+        {subtitle && <p className="text-xs sm:text-sm text-[#434428]/80 font-normal mt-0.5">{subtitle}</p>}
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Active Branch Pill */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D0C7B3] bg-[#F1F1EC] text-[#434428] text-xs font-mono font-medium shadow-2xs">
+          <GitBranch className="w-3.5 h-3.5 text-[#939474]" />
+          <span>{activeBranch}</span>
+        </div>
+
         {/* Mock Mode Pill */}
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs font-medium">
-          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#939474]/40 bg-[#939474]/15 text-[#434428] text-xs font-medium shadow-2xs">
+          <CheckCircle className="w-3.5 h-3.5 text-[#434428]" />
           <span>MOCK_MODE: ON</span>
         </div>
 
         {/* High severity indicator */}
         {urgentCount > 0 && (
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-red-200 bg-red-50 text-red-700 text-xs font-semibold tabular-nums">
-            <ShieldAlert className="w-3.5 h-3.5 text-red-600" />
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#F5CAC4] bg-[#FDF2F0] text-[#B93829] text-xs font-semibold tabular-nums shadow-2xs">
+            <ShieldAlert className="w-3.5 h-3.5 text-[#B93829]" />
             <span>{urgentCount} High-Severity Open</span>
           </div>
         )}
@@ -43,10 +57,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onRefresh}
             disabled={isRefreshing}
-            className="p-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors disabled:opacity-50"
+            className="p-2 rounded-xl border border-[#D0C7B3] bg-white hover:bg-[#F1F1EC] text-[#434428] transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
             title="Refresh Data"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-[#434428]' : ''}`} />
           </button>
         )}
       </div>

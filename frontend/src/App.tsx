@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  FlaggedMessage, 
-  ConnectedSource, 
-  OverviewStats, 
-  RepeatTarget, 
+import {
+  FlaggedMessage,
+  ConnectedSource,
+  OverviewStats,
+  RepeatTarget,
   SystemSettings,
   MessageStatus,
-  Platform 
+  Platform
 } from './types';
 import { api } from './services/api';
 import { Sidebar } from './components/Sidebar';
@@ -23,8 +23,9 @@ import { MessageReviewModal } from './components/MessageReviewModal';
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [userEmail, setUserEmail] = useState<string>('moderator@vaani.org');
   const [currentTab, setCurrentTab] = useState<string>('overview');
-  
+
   // Data states
   const [messages, setMessages] = useState<FlaggedMessage[]>([]);
   const [sources, setSources] = useState<ConnectedSource[]>([]);
@@ -39,7 +40,7 @@ export function App() {
     setIsRefreshing(true);
     try {
       // Trigger background sync across live connectors
-      await api.syncSources().catch(() => {});
+      await api.syncSources().catch(() => { });
 
       const [msgs, srcs, st, targets, sett] = await Promise.all([
         api.getMessages(),
@@ -124,10 +125,6 @@ export function App() {
     setCurrentTab('feed');
   };
 
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
-  }
-
   const openHighCount = messages.filter((m) => m.severity === 'high' && m.status === 'new').length;
   const pileOnCount = repeatTargets.filter((t) => t.pile_on_detected).length;
 
@@ -171,27 +168,34 @@ export function App() {
   const { title, subtitle } = getPageTitle();
 
   return (
-    <div className="flex min-h-screen bg-[#F6F8F6] text-slate-900 font-sans">
-      {/* Sidebar Navigation */}
+    <div className="flex h-screen overflow-hidden bg-[#F1F1EC] text-[#292728] font-sans relative">
+      {/* Sidebar Navigation - Fixed 100vh height, never scrolls away */}
       <Sidebar
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         openHighCount={openHighCount}
         pileOnCount={pileOnCount}
+        userEmail={userEmail}
+        userRole="Community Admin"
         onLogout={() => setIsAuthenticated(false)}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main Content Area - Independently scrollable viewport */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <Header
           title={title}
           subtitle={subtitle}
           urgentCount={openHighCount}
           onRefresh={loadData}
           isRefreshing={isRefreshing}
+          userEmail={userEmail}
+          userRole="Community Admin"
+          isAuthenticated={isAuthenticated}
+          onLogout={() => setIsAuthenticated(false)}
+          onSignInClick={() => setIsAuthenticated(false)}
         />
 
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
           {currentTab === 'overview' && stats && (
             <OverviewPage
               stats={stats}
@@ -248,6 +252,18 @@ export function App() {
 
         <Footer />
       </div>
+
+      {/* User Login Modal - Directly visible on the same screen as the dashboard */}
+      {!isAuthenticated && (
+        <LoginPage
+          isModal={true}
+          onLogin={(email) => {
+            setUserEmail(email);
+            setIsAuthenticated(true);
+          }}
+          onClose={() => setIsAuthenticated(true)}
+        />
+      )}
     </div>
   );
 }

@@ -282,15 +282,17 @@ def normalize_transliteration(text: str) -> str:
     return normalized
 
 
-def detect_language(text: str) -> str:
+def detect_language(text: str, normalized: Optional[str] = None) -> str:
     """Maintains exact 4 labels."""
-    lower = text.lower()
     script = detect_script(text)
 
     if script == "Gurmukhi":
         return "Punjabi (Romanized)"
     if script == "Devanagari":
         return "Hindi (Romanized)"
+
+    norm = (normalized or "").lower()
+    lower = text.lower() + " " + norm
 
     punjabi_markers = [
         "oye", "mainu", "tainu", "tuhanu", "kitta", "kiven", "pind",
@@ -306,7 +308,12 @@ def detect_language(text: str) -> str:
         "kyun", "yahan", "wahan", "karenge", "marunga", "saale", "chup",
         "aurat", "aadmi", "ladki", "ladka", "sharam", "tujhse", "kar", "karna",
         "raha", "rahi", "de", "do", "khatam", "bhai", "yaar", "aukat", "aukaat",
-        "sir", "phod", "jaan", "bhejo", "nikal"
+        "sir", "phod", "jaan", "bhejo", "nikal",
+        # Common Romanized Hindi insults and slang clusters
+        "kamina", "kamine", "kameena", "kameeni", "kaminee", "kutta", "kuttey",
+        "kutti", "bhosdika", "bhosdi", "bsdk", "bhenchod", "madarchod", "bkl",
+        "chutiya", "chootiya", "laude", "lode", "lawda", "harami", "gandu",
+        "randi", "chirkut", "chapri", "kanjar", "chomu", "bhikari", "suar", "joota"
     ]
     has_hindi = any(re.search(rf"\b{word}\b", lower) for word in hindi_markers)
 
@@ -374,13 +381,16 @@ def classify_rule_based(
     text: str,
     target_user: Optional[str] = None,
     normalized: Optional[str] = None,
-    language: Optional[str] = None
+    language: Optional[str] = None,
+    script: Optional[str] = None
 ) -> Dict[str, Any]:
     """Rule-based classification fallback used when MOCK_MODE=True or LLM calls fail."""
     if normalized is None:
         normalized = normalize_transliteration(text)
+    if script is None:
+        script = detect_script(text)
     if language is None:
-        language = detect_language(text)
+        language = detect_language(text, normalized)
 
     lower = (text.lower() + " " + normalized.lower())
 
@@ -412,6 +422,7 @@ def classify_rule_based(
                 "confidence": 0.94,
                 "flagged": False,
                 "provider": "rules",
+                "script": script,
             }
 
     # 2. Threats & Self-Harm Hints (High Severity)
@@ -431,6 +442,7 @@ def classify_rule_based(
             "confidence": 0.96,
             "flagged": True,
             "provider": "rules",
+            "script": script,
         }
 
     # 3. Sexual Content & Extortion
@@ -448,6 +460,7 @@ def classify_rule_based(
             "confidence": 0.95,
             "flagged": True,
             "provider": "rules",
+            "script": script,
         }
 
     # 4. Hate Speech
@@ -465,6 +478,7 @@ def classify_rule_based(
             "confidence": 0.93,
             "flagged": True,
             "provider": "rules",
+            "script": script,
         }
 
     # 5. Targeted Harassment / Polite Bullying / Brigading
@@ -483,6 +497,7 @@ def classify_rule_based(
             "confidence": 0.92,
             "flagged": True,
             "provider": "rules",
+            "script": script,
         }
 
     # 6. Insults & Cyber-Bullying
@@ -501,6 +516,7 @@ def classify_rule_based(
             "confidence": 0.90,
             "flagged": True,
             "provider": "rules",
+            "script": script,
         }
 
     # 7. Clean / Safe Default
@@ -514,6 +530,7 @@ def classify_rule_based(
         "confidence": 0.88,
         "flagged": False,
         "provider": "rules",
+        "script": script,
     }
 
 
@@ -528,7 +545,8 @@ def classify_text(
     classify_text(text: str, target_user: Optional[str] = None, context: Optional[List[str]] = None) -> dict
     """
     normalized = normalize_transliteration(text)
-    language = detect_language(text)
+    language = detect_language(text, normalized)
+    script = detect_script(text)
 
     if not target_user:
         mention = re.search(r'(?:^|\s)@([a-zA-Z0-9_]+)', text)
@@ -546,7 +564,8 @@ def classify_text(
             "target_user": target_user,
             "confidence": 0.95,
             "flagged": False,
-            "provider": "rules"
+            "provider": "rules",
+            "script": script
         }
 
     # Tier 2: Flagged or borderline message -> LLM Judge
@@ -564,6 +583,7 @@ def classify_text(
                 language=language
             )
             if llm_result:
+                llm_result["script"] = script
                 return llm_result
         except Exception as e:
             print(f"[Classifier] Tier 2 LLM exception, falling back to rules: {e}")
@@ -573,5 +593,6 @@ def classify_text(
         text=text,
         target_user=target_user,
         normalized=normalized,
-        language=language
+        language=language,
+        script=script
     )

@@ -87,6 +87,7 @@ class ClassifyResponse(BaseModel):
     confidence: float
     flagged: bool
     provider: Optional[str] = None
+    script: Optional[str] = None
 
 
 class DashboardStats(BaseModel):
