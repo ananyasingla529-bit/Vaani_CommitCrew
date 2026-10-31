@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import type { FlaggedMessage, MessageStatus } from '../types';
-import { 
-  X, 
-  Check, 
-  Ban, 
-  ShieldCheck, 
-  AlertTriangle, 
-  ArrowUpRight, 
-  User, 
+import {
+  X,
+  Check,
+  Ban,
+  ShieldCheck,
+  AlertTriangle,
+  ArrowUpRight,
   MessageSquare,
   AlertCircle
 } from 'lucide-react';
@@ -48,25 +47,25 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div 
-        className="bg-white border border-slate-200 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#292728]/70 backdrop-blur-sm animate-in fade-in duration-150">
+      <div
+        className="bg-white border border-[#D0C7B3] rounded-2xl shadow-elevated w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-base font-bold text-slate-900">Review Flagged Item</h2>
-            <div className="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center gap-1.5 shadow-subtle text-xs font-semibold">
-              <span className="text-slate-400 font-normal">Platform:</span>
+        {/* Modal Header - Spacious */}
+        <div className="px-8 py-5 border-b border-[#D0C7B3]/70 bg-[#FAF9F6] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3.5 flex-wrap">
+            <h2 className="text-lg font-bold text-[#292728]">Review Flagged Item</h2>
+            <div className="px-3 py-1 rounded-xl bg-white border border-[#D0C7B3] flex items-center gap-1.5 shadow-2xs text-xs font-semibold text-[#292728]">
+              <span className="text-[#6B6860] font-normal">Platform:</span>
               <PlatformIcon platform={message.platform} showLabel />
             </div>
             <StatusBadge status={message.status} />
-            <span className="text-xs text-slate-400 font-mono">#{message.id}</span>
+            <span className="text-xs text-[#6B6860] font-mono font-medium">#{message.id}</span>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+            className="p-2 rounded-xl hover:bg-[#F1F1EC] text-[#6B6860] hover:text-[#292728] transition-colors cursor-pointer"
             title="Close review"
           >
             <X className="w-5 h-5" />
@@ -75,106 +74,107 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
 
         {/* Action Feedback Banner */}
         {actionFeedback && (
-          <div className="px-6 py-2.5 bg-emerald-50 border-b border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600" />
+          <div className="px-8 py-3 bg-[#F4F5EE] border-b border-[#D8DABF] text-xs font-bold text-[#434428] flex items-center gap-2">
+            <Check className="w-4 h-4 text-[#434428]" />
             <span>{actionFeedback}</span>
           </div>
         )}
 
-        {/* Modal Content - Scrollable */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1">
-          {/* Key Details Overview (Prominently displaying Platform, Sender, Harassed, and Threat) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded text-xs">
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">
+        {/* Modal Content - Spacious & Open Layout */}
+        <div className="p-8 space-y-6 overflow-y-auto flex-1">
+          {/* Key Details Overview (Roomy 4 columns with space) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 p-5 bg-[#FAF9F6] border border-[#D0C7B3] rounded-2xl text-xs">
+            <div className="space-y-1">
+              <span className="text-[#6B6860] block text-[11px] uppercase font-bold tracking-wider">
                 Source Platform
               </span>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-1.5 pt-0.5">
                 <PlatformIcon platform={message.platform} showLabel />
               </div>
-              <div className="text-[11px] text-slate-500 truncate mt-0.5">
+              <div className="text-[11px] text-[#6B6860] pt-0.5 break-words">
                 {message.channel_name}
               </div>
             </div>
 
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">
+            <div className="space-y-1">
+              <span className="text-[#6B6860] block text-[11px] uppercase font-bold tracking-wider">
                 Sender
               </span>
-              <span className="font-bold text-slate-900 truncate block mt-1">
+              <span className="font-bold text-[#292728] text-sm block pt-0.5">
                 {message.sender_name}
               </span>
-              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+              <div className="text-[11px] text-[#6B6860] font-mono">
                 ID: {message.sender_id}
               </div>
             </div>
 
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">
+            <div className="space-y-1">
+              <span className="text-[#6B6860] block text-[11px] uppercase font-bold tracking-wider">
                 Person Harassed
               </span>
-              <span className="font-bold text-amber-900 truncate block mt-1">
+              <span className="font-bold text-[#434428] text-sm block pt-0.5">
                 {message.target_user || 'Channel Members'}
               </span>
-              <div className="text-[11px] text-amber-700 mt-0.5">
-                Target User
+              <div className="text-[11px] text-[#939474] font-medium">
+                Targeted Individual
               </div>
             </div>
 
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">
+            <div className="space-y-1">
+              <span className="text-[#6B6860] block text-[11px] uppercase font-bold tracking-wider">
                 Detected Issue
               </span>
-              <div className="flex items-center gap-1.5 mt-1">
+              <div className="flex items-center gap-2 pt-0.5">
                 <SeverityBadge severity={message.severity} showIcon={false} />
-                <span className="font-bold text-slate-800">{message.category}</span>
+                <span className="font-bold text-[#292728] text-sm">{message.category}</span>
               </div>
             </div>
           </div>
 
-          {/* Single Clean Message Box (No redundant duplicated normalized box) */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs text-slate-600">
-              <span className="font-bold uppercase tracking-wide text-slate-700">Message</span>
-              <span className="text-slate-400 tabular-nums">
+          {/* Single Clean Message Box - Expansive & Open */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-[#6B6860]">
+              <span className="font-bold uppercase tracking-wider text-[#292728]">Flagged Message Content</span>
+              <span className="text-[#6B6860] tabular-nums font-medium">
                 {new Date(message.timestamp).toLocaleString([], {
                   month: 'short',
                   day: 'numeric',
+                  year: 'numeric',
                   hour: '2-digit',
                   minute: '2-digit'
                 })}
               </span>
             </div>
-            <div className="p-4 bg-red-50/60 border border-red-200 rounded text-sm text-slate-900 font-medium leading-relaxed">
+            <div className="p-6 bg-[#FDF2F0] border border-[#F5CAC4] rounded-2xl text-base text-[#292728] font-medium leading-relaxed shadow-2xs">
               "{message.text}"
             </div>
           </div>
 
-          {/* Why this was flagged (Renamed from Model Classification Rationale) */}
-          <div className="space-y-1.5">
-            <span className="font-bold uppercase tracking-wide text-xs text-slate-700 flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+          {/* Why this was flagged */}
+          <div className="space-y-2">
+            <span className="font-bold uppercase tracking-wider text-xs text-[#292728] flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-[#939474]" />
               <span>Why this was flagged</span>
             </span>
-            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700 leading-relaxed font-normal">
+            <div className="p-5 bg-[#FAF9F6] border border-[#D0C7B3] rounded-2xl text-sm text-[#292728] leading-relaxed">
               {message.explanation}
             </div>
           </div>
 
-          {/* Conversation Context (Prior 3 messages) */}
+          {/* Conversation Context */}
           {message.context && message.context.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="font-bold uppercase tracking-wide text-xs text-slate-700 flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+            <div className="space-y-2">
+              <span className="font-bold uppercase tracking-wider text-xs text-[#292728] flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#939474]" />
                 <span>Conversation Context (Before this message)</span>
               </span>
-              <div className="bg-slate-50 border border-slate-200 rounded p-3 space-y-2 text-xs">
+              <div className="bg-[#FAF9F6] border border-[#D0C7B3] rounded-2xl p-5 space-y-3 text-xs">
                 {message.context.map((line, idx) => (
-                  <div key={idx} className="flex gap-2">
-                    <span className="text-[10px] font-mono text-slate-400 shrink-0 mt-0.5">
+                  <div key={idx} className="flex gap-3">
+                    <span className="text-[11px] font-mono text-[#939474] font-bold shrink-0 mt-1">
                       -{message.context.length - idx}
                     </span>
-                    <p className="text-slate-600 leading-relaxed font-normal bg-white p-2 rounded border border-slate-100 flex-1">
+                    <p className="text-[#292728] text-sm leading-relaxed font-normal bg-white p-3.5 rounded-xl border border-[#D0C7B3]/60 flex-1 shadow-2xs">
                       {line}
                     </p>
                   </div>
@@ -184,20 +184,20 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
           )}
         </div>
 
-        {/* Modal Actions Footer */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+        {/* Modal Actions Footer - Spacious & Airy */}
+        <div className="px-8 py-5.5 border-t border-[#D0C7B3]/70 bg-[#FAF9F6] flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+          <span className="text-xs font-bold text-[#292728] uppercase tracking-wider">
             Select Moderator Decision:
           </span>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap sm:flex-nowrap">
             {/* Dismiss */}
             <button
               onClick={() => handleAction('dismissed', 'Dismiss')}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors shadow-subtle disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-[#D0C7B3] bg-white hover:bg-[#F1F1EC] text-[#292728] text-xs sm:text-sm font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              <Ban className="w-3.5 h-3.5 text-slate-500" />
+              <Ban className="w-4 h-4 text-[#6B6860]" />
               <span>Dismiss</span>
             </button>
 
@@ -205,9 +205,9 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
             <button
               onClick={() => handleAction('dismissed', 'Marked False Positive')}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 rounded border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 text-xs font-medium transition-colors shadow-subtle disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-[#D8DABF] bg-[#F4F5EE] hover:bg-[#EAECE3] text-[#434428] text-xs sm:text-sm font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4 text-[#434428]" />
               <span>False Positive</span>
             </button>
 
@@ -215,9 +215,9 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
             <button
               onClick={() => handleAction('reviewed', 'Sender Warned')}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-3.5 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-semibold transition-colors shadow-subtle disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-[#D0C7B3] bg-white hover:bg-[#FAF9F6] text-[#434428] text-xs sm:text-sm font-semibold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+              <AlertTriangle className="w-4 h-4 text-[#939474]" />
               <span>Warn Sender</span>
             </button>
 
@@ -225,9 +225,9 @@ export const MessageReviewModal: React.FC<MessageReviewModalProps> = ({
             <button
               onClick={() => handleAction('escalated', 'Escalated to Safety Lead')}
               disabled={isSubmitting}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-2 px-4 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-colors shadow-subtle disabled:opacity-50"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-[#B93829] hover:bg-[#9E2E20] text-[#F1F1EC] text-xs sm:text-sm font-bold transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
-              <ArrowUpRight className="w-3.5 h-3.5 text-white" />
+              <ArrowUpRight className="w-4 h-4 text-white" />
               <span>Escalate</span>
             </button>
           </div>
