@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 import os
 import re
+import asyncio
 import requests
 from connectors.base import Connector
 from models import NormalizedMessage
@@ -50,7 +51,7 @@ class TelegramConnector(Connector):
                 if offset_param > 0:
                     url += f"&offset={offset_param}"
 
-                res = requests.get(url, timeout=6)
+                res = await asyncio.to_thread(requests.get, url, timeout=6)
                 if res.status_code == 200:
                     data = res.json()
                     updates = data.get("result", [])

@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from datetime import datetime, timezone
 import os
+import time
+import asyncio
 
 try:
     from dotenv import load_dotenv  # type: ignore
@@ -33,7 +35,7 @@ from models import (
 )
 from services.classifier import classify_text
 from services.alerts import send_high_severity_alert, get_pending_digest
-from services.ingest_worker import sync_all_sources, start_background_worker, stop_background_worker
+from services.ingest_worker import sync_all_sources, start_background_worker, stop_background_worker, _sync_lock
 from services.actions import execute_moderator_action
 from services.source_verifier import create_and_verify_source
 from services.security import mask_token, encrypt_token, decrypt_token
@@ -117,6 +119,7 @@ def list_messages(
     """
     Returns flagged messages matching multi-criteria filter and sort parameters.
     """
+    t0 = time.perf_counter()
     messages = db.get_messages(
         platform=platform,
         channel=channel,
@@ -128,6 +131,8 @@ def list_messages(
         sort_by=sort_by,
         sort_order=sort_order,
     )
+    duration_ms = (time.perf_counter() - t0) * 1000
+    print(f"[Timing] GET /messages took {duration_ms:.2f}ms (returned {len(messages)} messages)")
     return messages
 
 
@@ -200,7 +205,13 @@ async def trigger_source_sync():
     Polls all connected channels across Telegram, Discord, and YouTube in real-time.
     Dispatches ingestion in background task so HTTP response returns in < 5ms and frontend never times out.
     """
-    import asyncio
+    if _sync_lock.locked():
+        return {
+            "synced_sources_count": 0,
+            "new_flagged_incidents": 0,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "messages": []
+        }
     asyncio.create_task(sync_all_sources())
     sources = db.get_sources()
     return {
@@ -220,7 +231,11 @@ def get_stats():
     """
     Returns high-level statistics and chart series for the Overview dashboard.
     """
-    return db.get_stats()
+    t0 = time.perf_counter()
+    stats = db.get_stats()
+    duration_ms = (time.perf_counter() - t0) * 1000
+    print(f"[Timing] GET /stats took {duration_ms:.2f}ms")
+    return stats
 
 
 @app.get("/repeat-targets", response_model=List[RepeatTargetItem])

@@ -9,6 +9,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 import os
 import re
+import asyncio
 import requests
 from connectors.base import Connector
 from models import NormalizedMessage
@@ -71,7 +72,7 @@ class YouTubeConnector(Connector):
 
         try:
             url = f"{self.api_base}/videos?part=liveStreamingDetails&id={video_id}&key={self.api_key}"
-            res = requests.get(url, timeout=5)
+            res = await asyncio.to_thread(requests.get, url, timeout=5)
             if res.status_code == 200:
                 data = res.json()
                 items = data.get("items", [])
@@ -109,7 +110,7 @@ class YouTubeConnector(Connector):
                         url += f"&pageToken={next_token}"
 
                     try:
-                        res = requests.get(url, timeout=6)
+                        res = await asyncio.to_thread(requests.get, url, timeout=6)
                         if res.status_code == 200:
                             data = res.json()
                             new_token = data.get("nextPageToken", "")
@@ -133,9 +134,21 @@ class YouTubeConnector(Connector):
                     url = f"{self.api_base}/commentThreads?part=snippet&videoId={video_id}&maxResults={limit}&key={self.api_key}"
                 else:
                     target_chan = channel_id or source_id
+                    if target_chan and target_chan.startswith("yt_"):
+                        target_chan = target_chan[3:]
+                    if target_chan and not target_chan.startswith("UC"):
+                        try:
+                            h_url = f"{self.api_base}/channels?part=id&forHandle={target_chan}&key={self.api_key}"
+                            h_res = await asyncio.to_thread(requests.get, h_url, timeout=5)
+                            if h_res.status_code == 200:
+                                h_items = h_res.json().get("items", [])
+                                if h_items:
+                                    target_chan = h_items[0]["id"]
+                        except Exception:
+                            pass
                     url = f"{self.api_base}/commentThreads?part=snippet&allThreadsRelatedToChannelId={target_chan}&maxResults={limit}&key={self.api_key}"
 
-                res = requests.get(url, timeout=6)
+                res = await asyncio.to_thread(requests.get, url, timeout=6)
                 if res.status_code == 200:
                     data = res.json()
                     return data.get("items", [])

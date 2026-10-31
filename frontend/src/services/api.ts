@@ -16,6 +16,7 @@ import {
 } from '../data/mockData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // In-memory state with localStorage persistence for pure mock mode
 const STORAGE_KEY_MESSAGES = 'vaani_messages_v1';
@@ -23,16 +24,19 @@ const STORAGE_KEY_SOURCES = 'vaani_sources_v1';
 const STORAGE_KEY_SETTINGS = 'vaani_settings_v1';
 
 function getStoredMessages(): FlaggedMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_MESSAGES);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    console.error('Failed reading stored messages', e);
+  if (USE_MOCK) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_MESSAGES);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error('Failed reading stored messages', e);
+    }
   }
   return MOCK_MESSAGES;
 }
 
 function saveStoredMessages(messages: FlaggedMessage[]) {
+  if (!USE_MOCK) return;
   try {
     localStorage.setItem(STORAGE_KEY_MESSAGES, JSON.stringify(messages));
   } catch (e) {
@@ -41,16 +45,19 @@ function saveStoredMessages(messages: FlaggedMessage[]) {
 }
 
 function getStoredSources(): ConnectedSource[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY_SOURCES);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    console.error('Failed reading stored sources', e);
+  if (USE_MOCK) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_SOURCES);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {
+      console.error('Failed reading stored sources', e);
+    }
   }
   return INITIAL_MOCK_SOURCES;
 }
 
 function saveStoredSources(sources: ConnectedSource[]) {
+  if (!USE_MOCK) return;
   try {
     localStorage.setItem(STORAGE_KEY_SOURCES, JSON.stringify(sources));
   } catch (e) {
@@ -225,12 +232,17 @@ export const api = {
       if (filters?.sortBy) params.append('sort_by', filters.sortBy);
       if (filters?.sortOrder) params.append('sort_order', filters.sortOrder);
 
-      const res = await fetch(`${API_BASE}/messages?${params.toString()}`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`${API_BASE}/messages?${params.toString()}`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // Backend not running; fallback to local mock state
+      if (!USE_MOCK) {
+        throw new Error(`Failed to fetch messages: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
 
     let messages = getStoredMessages();
@@ -295,13 +307,18 @@ export const api = {
           action: actionName,
           reviewed_by: 'moderator@vaani.org'
         }),
-        signal: AbortSignal.timeout(1500)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // Backend not running; fallback to local state
+      if (!USE_MOCK) {
+        throw new Error(`Failed to update status: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
 
     const messages = getStoredMessages();
@@ -321,12 +338,17 @@ export const api = {
 
   async getSources(): Promise<ConnectedSource[]> {
     try {
-      const res = await fetch(`${API_BASE}/sources`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`${API_BASE}/sources`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to fetch sources: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     return getStoredSources();
   },
@@ -337,13 +359,18 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, platform, channel_name }),
-        signal: AbortSignal.timeout(1500)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to add source: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
 
     const sources = getStoredSources();
@@ -364,9 +391,17 @@ export const api = {
 
   async deleteSource(id: string): Promise<void> {
     try {
-      await fetch(`${API_BASE}/sources/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(1500) });
-    } catch {
-      // fallback
+      const res = await fetch(`${API_BASE}/sources/${id}`, { method: 'DELETE', signal: AbortSignal.timeout(10000) });
+      if (res.ok) {
+        return;
+      }
+      if (!USE_MOCK) {
+        throw new Error(`Failed to delete source: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     const sources = getStoredSources().filter(s => s.id !== id);
     saveStoredSources(sources);
@@ -377,25 +412,35 @@ export const api = {
       const res = await fetch(`${API_BASE}/sources/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to sync sources: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     return { synced_sources_count: 6, new_flagged_incidents: 0 };
   },
 
   async getStats(): Promise<OverviewStats> {
     try {
-      const res = await fetch(`${API_BASE}/stats`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`${API_BASE}/stats`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to fetch stats: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     const messages = getStoredMessages();
     const highOpen = messages.filter(m => m.severity === 'high' && m.status === 'new').length;
@@ -408,12 +453,17 @@ export const api = {
 
   async getRepeatTargets(): Promise<RepeatTarget[]> {
     try {
-      const res = await fetch(`${API_BASE}/repeat-targets`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`${API_BASE}/repeat-targets`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to fetch repeat targets: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
 
     const messages = getStoredMessages();
@@ -463,25 +513,35 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
-        signal: AbortSignal.timeout(2000)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to classify: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     return classifyTextLocally(text);
   },
 
   async getSettings(): Promise<SystemSettings> {
     try {
-      const res = await fetch(`${API_BASE}/settings`, { signal: AbortSignal.timeout(1500) });
+      const res = await fetch(`${API_BASE}/settings`, { signal: AbortSignal.timeout(10000) });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to fetch settings: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     return getStoredSettings();
   },
@@ -492,13 +552,18 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
-        signal: AbortSignal.timeout(1500)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to save settings: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     saveStoredSettings(settings);
     return settings;
@@ -510,13 +575,18 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message_id: messageId || 'msg_001' }),
-        signal: AbortSignal.timeout(2000)
+        signal: AbortSignal.timeout(10000)
       });
       if (res.ok) {
         return await res.json();
       }
-    } catch {
-      // fallback
+      if (!USE_MOCK) {
+        throw new Error(`Failed to send test alert: ${res.status} ${res.statusText}`);
+      }
+    } catch (err) {
+      if (!USE_MOCK) {
+        throw err;
+      }
     }
     return {
       success: true,

@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 import os
 import re
+import asyncio
 import requests
 from connectors.base import Connector
 from models import NormalizedMessage
@@ -45,7 +46,7 @@ class DiscordConnector(Connector):
                     "Content-Type": "application/json"
                 }
                 url = f"{self.api_base}/channels/{channel_id}/messages?limit={limit}"
-                res = requests.get(url, headers=headers, timeout=6)
+                res = await asyncio.to_thread(requests.get, url, headers=headers, timeout=6)
                 if res.status_code == 200:
                     return res.json()
                 else:

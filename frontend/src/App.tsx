@@ -35,13 +35,12 @@ export function App() {
   const [selectedMessage, setSelectedMessage] = useState<FlaggedMessage | null>(null);
   const [initialSeverityFilter, setInitialSeverityFilter] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const loadData = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      // Trigger background sync across live connectors
-      await api.syncSources().catch(() => { });
-
       const [msgs, srcs, st, targets, sett] = await Promise.all([
         api.getMessages(),
         api.getSources(),
@@ -54,8 +53,12 @@ export function App() {
       setStats(st);
       setRepeatTargets(targets);
       setSettings(sett);
+      setErrorBanner(null);
+      setLastUpdated(new Date().toLocaleTimeString('en-GB'));
     } catch (err) {
       console.error('Error loading dashboard data:', err);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      setErrorBanner(`Cannot reach the Vaani backend at ${apiUrl}. Retrying...`);
     } finally {
       setIsRefreshing(false);
     }
@@ -190,12 +193,19 @@ export function App() {
           urgentCount={openHighCount}
           onRefresh={loadData}
           isRefreshing={isRefreshing}
+          lastUpdated={lastUpdated}
           userEmail={userEmail}
           userRole="Community Admin"
           isAuthenticated={isAuthenticated}
           onLogout={() => setIsAuthenticated(false)}
           onSignInClick={() => setIsAuthenticated(false)}
         />
+
+        {errorBanner && (
+          <div className="mx-6 lg:mx-8 mt-4 px-4 py-2.5 rounded-xl border border-[#D0C7B3] bg-[#E9E9E2] text-[#434428] text-xs font-medium text-center shadow-2xs">
+            {errorBanner}
+          </div>
+        )}
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
           {currentTab === 'overview' && stats && (

@@ -68,11 +68,25 @@ def parse_platform_and_identifiers(url: str, override_platform: Optional[str] = 
             channel_id = f"yt_{vid_id}"
             default_name = f"YouTube Stream ({vid_id})"
         else:
-            chan_match = re.search(r"youtube\.com/(?:@|channel/|c/)?([a-zA-Z0-9_-]+)", clean_url)
+            chan_match = re.search(r"youtube\.com/(?:@|channel/|c/)?([a-zA-Z0-9_.-]+)", clean_url)
             if chan_match:
-                slug = chan_match.group(1)
+                slug = chan_match.group(1).lstrip("@")
                 channel_id = f"yt_{slug}"
                 default_name = f"YouTube Channel @{slug}"
+                api_key = os.getenv("YOUTUBE_API_KEY")
+                if api_key and not api_key.endswith("_MODERATION"):
+                    try:
+                        res = requests.get(
+                            f"https://www.googleapis.com/youtube/v3/channels?part=id,snippet&forHandle={slug}&key={api_key}",
+                            timeout=5
+                        )
+                        if res.status_code == 200:
+                            items = res.json().get("items", [])
+                            if items:
+                                channel_id = items[0]["id"]
+                                default_name = items[0]["snippet"].get("title", default_name)
+                    except Exception as e:
+                        print(f"[SourceVerifier] Error resolving YouTube handle: {e}")
 
     return platform, channel_id, default_name
 

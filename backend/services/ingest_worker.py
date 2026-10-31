@@ -55,6 +55,9 @@ BACKGROUND_WORKER_TASK: Optional[asyncio.Task] = None
 TELEGRAM_WORKER_TASK: Optional[asyncio.Task] = None
 TELEGRAM_POLL_LOCK = asyncio.Lock()
 
+# Module-level lock to prevent overlapping sync tasks
+_sync_lock = asyncio.Lock()
+
 
 def run_classifier_safely(text: str, target_user: Optional[str] = None, context: Optional[List[str]] = None) -> Dict[str, Any]:
     """
@@ -115,8 +118,8 @@ async def process_raw_item(raw: Dict[str, Any], source: Dict[str, Any], connecto
     norm = connector.normalize(raw)
     source_key = str(source.get("id"))
 
-    # Check if already processed
-    existing = db.get_message_by_id(norm.id)
+    # Check if already processed and stored
+    existing = await asyncio.to_thread(db.get_message_by_id, norm.id)
     if existing:
         return None
 
@@ -136,15 +139,16 @@ async def process_raw_item(raw: Dict[str, Any], source: Dict[str, Any], connecto
             ROLLING_BUFFER[source_key].append(f"{norm.sender_name}: {norm.text}")
             return None
 
-    # Classify message text
-    classification = run_classifier_safely(
+    # Classify message text without blocking the event loop
+    classification = await asyncio.to_thread(
+        run_classifier_safely,
         text=norm.text,
         target_user=norm.target_user,
         context=preceding_context
     )
 
-    # Increment scanned count for every processed text message
-    record_scanned_increment(1)
+    # Hard Rule 3: Call db_brain.increment_scanned(1)
+    await asyncio.to_thread(record_scanned_increment, 1)
 
     is_flagged = classification.get("flagged", False) or is_force_flagged
 
@@ -396,22 +400,26 @@ async def sync_all_sources() -> Dict[str, Any]:
     POST /sources/sync trigger.
     Syncs connected sources without duplicating Telegram long-poll calls.
     """
-    sources = db.get_sources()
-    total_new = 0
-    all_flagged = []
+    if _sync_lock.locked():
+        return {"synced_sources_count": 0, "new_flagged_incidents": 0, "messages": []}
 
-    for src in sources:
-        if src.get("status") == "connected":
-            flagged = await sync_connected_source(src)
-            total_new += len(flagged)
-            all_flagged.extend(flagged)
+    async with _sync_lock:
+        sources = await asyncio.to_thread(db.get_sources)
+        total_new = 0
+        all_flagged = []
 
-    return {
-        "synced_sources_count": len(sources),
-        "new_flagged_incidents": total_new,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "messages": all_flagged
-    }
+        for src in sources:
+            if src.get("status") == "connected":
+                flagged = await sync_connected_source(src)
+                total_new += len(flagged)
+                all_flagged.extend(flagged)
+
+        return {
+            "synced_sources_count": len(sources),
+            "new_flagged_incidents": total_new,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "messages": all_flagged
+        }
 
 
 async def background_ingest_loop():
@@ -457,6 +465,7 @@ def stop_background_worker():
     """Cancels both workers."""
     global BACKGROUND_WORKER_TASK, TELEGRAM_WORKER_TASK, IS_WORKER_RUNNING
     IS_WORKER_RUNNING = False
+
     if BACKGROUND_WORKER_TASK and not BACKGROUND_WORKER_TASK.done():
         BACKGROUND_WORKER_TASK.cancel()
     if TELEGRAM_WORKER_TASK and not TELEGRAM_WORKER_TASK.done():
