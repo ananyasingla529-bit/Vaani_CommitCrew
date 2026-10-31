@@ -3,7 +3,7 @@ Vaani Moderation Console - FastAPI Backend.
 Serves REST endpoints for messages, sources, stats, repeat targets, settings, and live classification.
 """
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from datetime import datetime, timezone
@@ -27,7 +27,11 @@ from models import (
 )
 from services.classifier import classify_text
 from services.alerts import send_high_severity_alert, get_pending_digest
-from services.ingest_worker import sync_all_sources
+from services.ingest_worker import sync_all_sources, start_background_worker, stop_background_worker
+from services.actions import execute_moderator_action
+from services.source_verifier import create_and_verify_source
+from services.security import mask_token, encrypt_token, decrypt_token
+from connectors.discord_service import start_discord_gateway, stop_discord_gateway
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -36,23 +40,41 @@ app = FastAPI(
     version="1.0.4",
 )
 
-# Enable CORS for local Vite frontend
+# CORS configuration restricted to FRONTEND_ORIGIN
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+auth_disabled = os.getenv("AUTH_DISABLED", "True").lower() == "true"
+
+origins = [frontend_origin, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
+if auth_disabled:
+    origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins in development
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Hard Rule 5: Include ops router with one added line
+from routers.ops import ops_router; app.include_router(ops_router)
+
 
 @app.on_event("startup")
 def startup_event():
-    """Initializes SQLite database and seeds initial mock dataset if empty."""
+    """Initializes SQLite database and background tasks for continuous ingestion and Discord gateway."""
     db.init_db()
-    print("[Vaani Backend] SQLite database initialized and ready.")
+    start_background_worker()
+    start_discord_gateway()
+    print("[Vaani Backend] SQLite database, background worker, and Discord gateway initialized.")
     mock_flag = os.getenv("MOCK_MODE", "True")
     print(f"[Vaani Backend] MOCK_MODE={mock_flag}")
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    stop_background_worker()
+    stop_discord_gateway()
 
 
 @app.get("/")
@@ -110,19 +132,18 @@ def get_message(message_id: str):
 @app.patch("/messages/{message_id}/status", response_model=NormalizedMessage)
 def update_message_status(message_id: str, payload: MessageStatusUpdate):
     """
-    Updates status workflow (New, Reviewed, Dismissed, Escalated).
-    Records moderator identity and review timestamp.
+    Updates status workflow and executes human-in-the-loop moderation actions
+    (warn, dismiss, escalate, delete_and_ban). Never crashes with 500.
     """
-    reviewed_at = datetime.now(timezone.utc).isoformat()
     reviewer = payload.reviewed_by or "moderator@vaani.org"
-    
-    updated = db.update_message_status(
-        msg_id=message_id,
+    updated = execute_moderator_action(
+        message_id=message_id,
         status=payload.status,
+        action=payload.action,
         reviewed_by=reviewer,
-        reviewed_at=reviewed_at,
+        notes=payload.notes,
     )
-    if not updated:
+    if not updated or updated.get("error") == "Message not found":
         raise HTTPException(status_code=404, detail="Message not found")
     return updated
 
@@ -142,36 +163,16 @@ def list_sources():
 @app.post("/sources", response_model=ConnectedSource)
 def create_source(payload: SourceCreateRequest):
     """
-    Adds a new community channel with parsed platform recognition.
+    Adds a new community channel: parses t.me, discord.gg, and YouTube URLs,
+    verifies permissions via platform API or mock validation,
+    and sets status ('connected', 'pending', 'permission_missing') with permission_hint.
     """
-    url = payload.url.strip()
-    platform = payload.platform
-    if not platform:
-        if "t.me" in url or "telegram.me" in url:
-            platform = "telegram"
-        elif "discord" in url:
-            platform = "discord"
-        elif "youtube.com" in url or "youtu.be" in url:
-            platform = "youtube"
-        else:
-            platform = "telegram"
-
-    source_id = f"src_{platform}_{int(datetime.now(timezone.utc).timestamp())}"
-    channel_name = payload.channel_name or f"Connected {platform.capitalize()} Channel"
-
-    new_source = {
-        "id": source_id,
-        "platform": platform,
-        "channel_id": f"chan_{int(datetime.now(timezone.utc).timestamp()) % 1000000}",
-        "channel_name": channel_name,
-        "url": url,
-        "status": "connected",
-        "flags_count": 0,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-        "permission_hint": None,
-    }
-
-    return db.insert_source(new_source)
+    return create_and_verify_source(
+        url=payload.url,
+        platform=payload.platform,
+        channel_name=payload.channel_name,
+        privacy_mode=payload.privacy_mode or "full"
+    )
 
 
 @app.delete("/sources/{source_id}")
@@ -233,12 +234,30 @@ def classify_endpoint(payload: ClassifyRequest):
 
 @app.get("/settings", response_model=SystemSettings)
 def get_settings():
-    return db.get_settings()
+    settings = db.get_settings()
+    masked = dict(settings)
+    raw_token = masked.get("telegram_bot_token", "")
+    if raw_token:
+        decrypted = decrypt_token(raw_token)
+        masked["telegram_bot_token"] = mask_token(decrypted)
+    return masked
 
 
 @app.post("/settings", response_model=SystemSettings)
 def save_settings(payload: SystemSettings):
-    return db.save_settings(payload.dict())
+    existing = db.get_settings()
+    data = payload.dict()
+    raw_token = data.get("telegram_bot_token", "")
+    if "********" in raw_token:
+        # Retain previous token if unchanged by user
+        data["telegram_bot_token"] = existing.get("telegram_bot_token", "")
+    elif raw_token:
+        data["telegram_bot_token"] = encrypt_token(raw_token)
+
+    saved = db.save_settings(data)
+    res = dict(saved)
+    res["telegram_bot_token"] = mask_token(raw_token) if raw_token else ""
+    return res
 
 
 @app.post("/alerts/test")

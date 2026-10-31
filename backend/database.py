@@ -135,6 +135,7 @@ def init_db():
 
         conn.commit()
 
+    from db_ops import init_ops_db; init_ops_db()
     conn.close()
 
 

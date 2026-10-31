@@ -3,7 +3,7 @@ Pydantic data models for the Vaani moderation console.
 Adheres to the normalized message schema across Telegram, Discord, and YouTube.
 """
 
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Dict, Any
 from pydantic import BaseModel, Field
 
 
@@ -19,6 +19,7 @@ CategoryType = Literal[
 ]
 StatusType = Literal["new", "reviewed", "dismissed", "escalated"]
 SourceStatusType = Literal["pending", "connected", "permission_missing"]
+PrivacyModeType = Literal["full", "trigger_only", "report_only"]
 
 
 class NormalizedMessage(BaseModel):
@@ -40,6 +41,7 @@ class NormalizedMessage(BaseModel):
     status: StatusType = "new"
     reviewed_by: Optional[str] = None
     reviewed_at: Optional[str] = None
+    platform_result: Optional[Dict[str, Any]] = None
 
 
 class MessageStatusUpdate(BaseModel):
@@ -59,12 +61,14 @@ class ConnectedSource(BaseModel):
     flags_count: int = 0
     created_at: str
     permission_hint: Optional[str] = None
+    privacy_mode: Optional[str] = "full"
 
 
 class SourceCreateRequest(BaseModel):
     url: str
     platform: Optional[PlatformType] = None
     channel_name: Optional[str] = None
+    privacy_mode: Optional[PrivacyModeType] = "full"
 
 
 class ClassifyRequest(BaseModel):

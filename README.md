@@ -257,3 +257,52 @@ Vaani is built on three core institutional safety principles:
 1. **Administrative Consent**: Channels are only ingested if authorized community administrators have explicitly added the bot and granted moderation permissions.
 2. **Minimal Storage**: Only messages flagged by the classifier as potentially violating community safety guidelines are retained; benign chatter is discarded.
 3. **Human-in-the-Loop**: The classification engine recommends categories and severities, but a human community moderator always makes the decision to dismiss, warn, or escalate.
+
+
+---
+
+## External Platform Setup & Configuration Guide
+
+### 1. Telegram Connector Setup (@BotFather)
+1. Open Telegram and search for `@BotFather`.
+2. Send `/newbot`, enter a display name (e.g. `Vaani Safety Bot`), and choose a username ending in `bot` (e.g. `vaani_safety_bot`).
+3. Copy the HTTP API token into `backend/.env` as `TELEGRAM_BOT_TOKEN`.
+4. **CRITICAL: Disable Group Privacy Mode**:
+   - In `@BotFather`, send `/setprivacy`.
+   - Select your bot (`@vaani_safety_bot`).
+   - Choose **Disable**.
+   - *Why?* By default, Telegram bots in group chats only receive commands or direct mentions. Disabling privacy mode allows the bot to monitor group conversation messages in real time for cyber-bullying detection.
+5. Add your bot to your target student group as an **Administrator** with permissions to:
+   - *Delete Messages* (for punitive actions)
+   - *Ban/Restrict Users* (for escalation and muting)
+6. To receive instant moderator alerts, start a direct message with the bot from your moderator account and set `TELEGRAM_MODERATOR_CHAT_ID` in `backend/.env`.
+
+### 2. Discord Connector Setup (Discord Developer Portal)
+1. Visit the [Discord Developer Portal](https://discord.com/developers/applications) and create a **New Application**.
+2. Navigate to **Bot** > **Reset Token** and copy the bot token into `DISCORD_BOT_TOKEN`.
+3. Under **Privileged Gateway Intents**, enable **MESSAGE CONTENT INTENT** (and Server Members Intent).
+   - *Why?* Discord requires the Message Content intent for bots to read chat messages in channels.
+4. Navigate to **OAuth2** > **URL Generator**:
+   - Scopes: `bot`
+   - Bot Permissions: `Read Messages/View Channels`, `Send Messages`, `Manage Messages`, `Moderate Members`, `Kick Members`, `Ban Members`.
+5. Invite the bot to your student Discord server using the generated URL.
+
+### 3. Google YouTube Data API & OAuth Setup
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create a project.
+2. Enable the **YouTube Data API v3** in APIs & Services.
+3. Under **Credentials**, create an **API Key** and assign it to `YOUTUBE_API_KEY` in `backend/.env`.
+4. For live chat moderation actions (deleting messages, banning users):
+   - Configure the **OAuth Consent Screen** in **Testing Mode**.
+   - Add your developer and moderator Google accounts as **Test Users**.
+   - Add scope: `https://www.googleapis.com/auth/youtube.force-ssl`.
+   - Generate an OAuth 2.0 access token and set `YOUTUBE_OAUTH_TOKEN` in `backend/.env`.
+
+---
+
+## Operations & Human-in-the-Loop Moderation API
+
+Vaani provides complete auditability and student warning tracking:
+- `GET /audit-log`: Review all human-in-the-loop decisions (`warn`, `dismiss`, `escalate`, `delete_and_ban`) with platform delivery outcomes.
+- `GET /students/{sender_id}/history`: Review full disciplinary timeline, previous warnings, and violation records across platforms.
+- `POST /auth/login`: Issue moderator JWT credentials using bcrypt verification (`MODERATOR_EMAIL` and `MODERATOR_PASSWORD_HASH`).
+- `POST /ops/retention-cleanup`: Trigger automatic or manual data retention cleanup deleting messages older than `RETENTION_DAYS`.
