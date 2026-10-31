@@ -73,7 +73,8 @@ app.include_router(ops_router)
 def startup_event():
     """Initializes SQLite database and background tasks for continuous ingestion and Discord gateway."""
     db.init_db()
-    start_background_worker()
+    if os.getenv("ENABLE_BACKGROUND_WORKER", "False").lower() == "true":
+        start_background_worker()
     start_discord_gateway()
     print("[Vaani Backend] SQLite database, background worker, and Discord gateway initialized.")
     mock_flag = os.getenv("MOCK_MODE", "True")
@@ -303,3 +304,5 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+
+
