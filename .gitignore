@@ -1,0 +1,25 @@
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.tmp/
+*.tsbuildinfo
+
+# Python / Backend
+__pycache__/
+backend/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+backend/vaani.db
+backend/.env
+
+# Logs and OS
+*.log
+.DS_Store
+Thumbs.db
