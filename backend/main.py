@@ -38,6 +38,7 @@ from services.actions import execute_moderator_action
 from services.source_verifier import create_and_verify_source
 from services.security import mask_token, encrypt_token, decrypt_token
 from connectors.discord_service import start_discord_gateway, stop_discord_gateway
+from services.config_resolver import get_telegram_runtime_config
 from routers.brain import router as brain_router
 from routers.ops import ops_router
 
@@ -76,9 +77,8 @@ def startup_event():
     if os.getenv("ENABLE_BACKGROUND_WORKER", "False").lower() == "true":
         start_background_worker()
     start_discord_gateway()
+    cfg = get_telegram_runtime_config(log_startup=True)
     print("[Vaani Backend] SQLite database, background worker, and Discord gateway initialized.")
-    mock_flag = os.getenv("MOCK_MODE", "True")
-    print(f"[Vaani Backend] MOCK_MODE={mock_flag}")
 
 
 @app.on_event("shutdown")

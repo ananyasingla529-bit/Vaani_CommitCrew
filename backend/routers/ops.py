@@ -1,7 +1,7 @@
 """
 Operations router for Vaani moderation console.
 Houses endpoints for audit logs, student discipline histories, authentication,
-and retention cleanup.
+retention cleanup, source verification, and Telegram ingestion debugging.
 """
 
 from fastapi import APIRouter, HTTPException, Depends, Query, status
@@ -103,3 +103,38 @@ def run_retention_cleanup(
         "retention_days": days or int(os.getenv("RETENTION_DAYS", "30"))
     }
 
+
+@ops_router.post("/sources/{source_id}/verify")
+def verify_source_endpoint(source_id: str):
+    """
+    Step 2 Rule 2: POST /sources/{id}/verify
+    Verifies target community source permissions, binds real group chat ID,
+    and returns updated source state ('connected', 'pending', 'permission_missing').
+    """
+    from services.source_verifier import verify_source_by_id
+    try:
+        updated = verify_source_by_id(source_id)
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Source verification error: {e}")
+
+
+@ops_router.get("/debug/telegram")
+def get_debug_telegram():
+    """
+    Step 2 Rule 7: GET /debug/telegram
+    Returns:
+    - mock_mode (bool)
+    - token_loaded (bool)
+    - bot_username from getMe
+    - webhook_url
+    - last_update_id_processed
+    - updates_fetched_last_5min
+    - registered_chat_ids
+    - last_10_skipped_messages with reason
+    Masks all secrets.
+    """
+    from services.ingest_worker import get_telegram_debug_status
+    return get_telegram_debug_status()
