@@ -63,6 +63,8 @@ export function App() {
 
   useEffect(() => {
     loadData();
+    const interval = setInterval(loadData, 8000);
+    return () => clearInterval(interval);
   }, [loadData]);
 
   // Status update handler
