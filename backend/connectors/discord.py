@@ -21,11 +21,13 @@ class DiscordConnector(Connector):
             or os.getenv("DISCORD_BOT_TOKEN")
         )
         self.mock_mode = os.getenv("MOCK_MODE", "True").lower() == "true"
+        self.discord_live = os.getenv("DISCORD_LIVE", "").lower() == "true"
         self.api_base = "https://discord.com/api/v10"
 
     def is_real_mode_available(self) -> bool:
+        live_enabled = self.discord_live or (not self.mock_mode)
         return (
-            not self.mock_mode
+            live_enabled
             and bool(self.bot_token)
             and not self.bot_token.endswith("_TOKEN")
             and len(self.bot_token) > 20

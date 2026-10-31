@@ -77,9 +77,11 @@ async def run_discord_bot():
     global DISCORD_CLIENT
     token = os.getenv("DISCORD_BOT_TOKEN")
     mock_mode = os.getenv("MOCK_MODE", "True").lower() == "true"
+    discord_live = os.getenv("DISCORD_LIVE", "").lower() == "true"
 
-    if mock_mode or not token or token.endswith("_TOKEN") or len(token) < 20:
-        print("[DiscordGateway] Discord bot live gateway skipped (MOCK_MODE=True or demo token). Using simulated connector.")
+    live_enabled = discord_live or (not mock_mode)
+    if not live_enabled or not token or token.endswith("_TOKEN") or len(token) < 20:
+        print("[DiscordGateway] Discord bot live gateway skipped (MOCK_MODE=True and DISCORD_LIVE=False, or demo token). Using simulated connector.")
         return
 
     try:
