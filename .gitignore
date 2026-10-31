@@ -16,7 +16,9 @@ backend/__pycache__/
 env/
 venv/
 .venv/
-backend/vaani.db
+backend/vaani.db*
+*.db-wal
+*.db-shm
 backend/.env
 
 # Logs and OS
