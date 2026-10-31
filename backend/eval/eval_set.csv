@@ -1,0 +1,91 @@
+text,label,category,language
+"bhai kal ke match me tune aag laga di bilkul!",safe,Other,Hindi (Romanized)
+"The background queue is stuck, just pkill -9 the zombie workers",safe,Other,Hinglish
+"Abe saale itna mast surprise dega bataya bhi nahi! Pagal hai yaar!",safe,Other,Hinglish
+"Veere presentation ch tah faad ditta tu, sab fan ban gaye!",safe,Other,Punjabi (Romanized)
+"@rahul_cs tujhse na ho payega, rehne de, tum jaise logo ko admission kisne diya pata nahi",flagged,Harassment,Hindi (Romanized)
+"@priya_sharma_du college aake dikha kal, tera vo haal karunga ki hospital me admit hona padega.",flagged,Threat,Hindi (Romanized)
+"Oye @simran_k, campus baahar mil mainu, teriyan lattan bhan ditta te zinda nahi mudega.",flagged,Threat,Punjabi (Romanized)
+"Sab khatam ho gaya hai, I don't want to live anymore, tonight is my last night goodbye everyone.",flagged,Threat,Hinglish
+"Tera code k*tta aur b@stard jaisa hai, chup kar bh0sdi ke @arjun",flagged,Insult/Bullying,Hinglish
+"Spam this clown's WhatsApp and mass report her account, leak her home address @neha_du",flagged,Harassment,Hinglish
+"तू कुत्ता और कमीना है @user",flagged,Insult/Bullying,Hindi (Romanized)
+"कल कॉलेज के बाहर मिल, तेरा सिर फोड़ दूंगा",flagged,Threat,Hindi (Romanized)
+"अब जीने का मन नहीं कर रहा, सब खत्म करने जा रहा हूँ",flagged,Threat,Hindi (Romanized)
+"तुझसे ना हो पाएगा रहने दे, तुम जैसों को किसने एडमिशन दिया",flagged,Harassment,Hindi (Romanized)
+"भाई तुमने तो स्टेज पर आग लगा दी, बहुत शानदार!",safe,Other,Hindi (Romanized)
+"आज का असाइनमेंट सबने सबमिट कर दिया क्या?",safe,Other,Hindi (Romanized)
+"तੂੰ ਕੁੱਤਾ ਏਂ ਤੇ ਕਮੀਨਾ ਏਂ ਸਾਡੇ ਪਿੰਡ ਦਾ",flagged,Insult/Bullying,Punjabi (Romanized)
+"ਕੈਂਪਸ ਬਾਹਰ ਮਿਲ, ਤੇਰੀਆਂ ਲੱਤਾਂ ਭੰਨ ਦਿਆਂਗਾ",flagged,Threat,Punjabi (Romanized)
+"ਵੀਰੇ ਤੂੰ ਤਾਂ ਕਮਾਲ ਕਰ ਦਿੱਤੀ, ਅੱਗ ਲਾ ਦਿੱਤੀ ਸਟੇਜ ਤੇ!",safe,Other,Punjabi (Romanized)
+"ਕੱਲ੍ਹ ਦੀ ਕਲਾਸ ਦਾ ਸਮਾਂ ਕੀ ਹੈ ਦੱਸਿਓ?",safe,Other,Punjabi (Romanized)
+"kaminaaaa tu ek b@stard hai bh0sdi ke",flagged,Insult/Bullying,Hindi (Romanized)
+"c h u t i y a b k l nikal yaha se",flagged,Insult/Bullying,Hindi (Romanized)
+"🤡 clown idiot tu ek suar 🐷 hai",flagged,Insult/Bullying,Hindi (Romanized)
+"tera sir phod dunga agar kal dikha to",flagged,Threat,Hindi (Romanized)
+"hospital pahuncha dunga tujhe dekh liyo",flagged,Threat,Hindi (Romanized)
+"jaan se maar dunga agar dubara bola",flagged,Threat,Hindi (Romanized)
+"ghar se uthwa lunga tujhe @varun",flagged,Threat,Hindi (Romanized)
+"main mar jaana chahta hu, I can't take this anymore goodbye",flagged,Threat,Hinglish
+"suicide is the only way left for me, bye everyone",flagged,Threat,English
+"kutta saala kuttey ki maut marega",flagged,Insult/Bullying,Hindi (Romanized)
+"kameena aadmi hai tu ek number ka",flagged,Insult/Bullying,Hindi (Romanized)
+"chup kar bhosdike apni aukat me reh",flagged,Insult/Bullying,Hindi (Romanized)
+"madarchod nikal hamare channel se",flagged,Insult/Bullying,Hindi (Romanized)
+"bhen ke lode dubara mat aana yaha",flagged,Insult/Bullying,Hindi (Romanized)
+"harami chapri chirkut kahin ka",flagged,Insult/Bullying,Hindi (Romanized)
+"tum jaise quota wale yaha deserve nahi karte",flagged,Hate speech,Hindi (Romanized)
+"desh se bahar nikalo in logo ko",flagged,Hate speech,Hindi (Romanized)
+"feminists are cancer to society",flagged,Hate speech,English
+"send private pics or I will leak your phone number",flagged,Sexual content,English
+"ek raat ka kitna logi batao @priya",flagged,Sexual content,Hindi (Romanized)
+"nice figure hai baby sex chat karegi kya",flagged,Sexual content,Hindi (Romanized)
+"rehne de tere bas ki baat nahi hai code likhna",flagged,Harassment,Hindi (Romanized)
+"career khatam kar dunga tera industry me",flagged,Harassment,Hindi (Romanized)
+"we will mass report your YouTube channel until it gets banned",flagged,Harassment,English
+"I will find you and murder you in your dorm",flagged,Threat,English
+"Break your legs if you show your face here again",flagged,Threat,English
+"You are a pathetic idiot and useless scumbag",flagged,Insult/Bullying,English
+"Nobody likes you here, just leave the community forever",flagged,Harassment,English
+"Please kill the background process using pkill",safe,Other,English
+"You really killed it in the client presentation, kudos!",safe,Other,English
+"I was dead laughing at that funny meme you sent!",safe,Other,English
+"Faad diya yaar tune debate me, amazing rebuttal!",safe,Other,Hinglish
+"Pagal hai yaar itna expensive gift lane ki kya zarurat thi",safe,Other,Hindi (Romanized)
+"Good morning everyone, reminder about the sync meeting at 10 AM",safe,Other,English
+"Can someone share the link for today's lecture slides?",safe,Other,English
+"I have pushed the changes to the repo, please review the PR",safe,Other,English
+"Thanks a lot for helping me debug the Docker container!",safe,Other,English
+"Kal sabhi log library me milenge project discussion ke liye",safe,Other,Hindi (Romanized)
+"Main assignments complete kar chuka hu, kisi ko help chahiye to batao",safe,Other,Hindi (Romanized)
+"Happy Diwali to all members and their families!",safe,Other,English
+"Great initiative by the student council, fully support this!",safe,Other,English
+"Oye veere kal pind jaana hai main, ticket book ho gayi",safe,Other,Punjabi (Romanized)
+"Ki haal chaal hai veere, sab theek thaak?",safe,Other,Punjabi (Romanized)
+"Changa fer milde han agle hafte college vich",safe,Other,Punjabi (Romanized)
+"Veere tu taan kaint lag reha aj di photo ch",safe,Other,Punjabi (Romanized)
+"Mainu lagda hai code vich memory leak hai, check karange",safe,Other,Punjabi (Romanized)
+"oye chittar pehnge tere je dubara bola taan",flagged,Threat,Punjabi (Romanized)
+"chaped maaran tere munh te kanjar deya",flagged,Threat,Punjabi (Romanized)
+"kutta ae tu saala chor kahin da",flagged,Insult/Bullying,Punjabi (Romanized)
+"teriyan lattan bhan ditiyan te tur nahi sakega",flagged,Threat,Punjabi (Romanized)
+"dekh lunga tujhe campus ke bahar kal",flagged,Threat,Hindi (Romanized)
+"b@stard developer broke the production build again @rohit",flagged,Insult/Bullying,Hinglish
+"ch0mu loser can't even write a single unit test",flagged,Insult/Bullying,English
+"r*ndi kahin ki chup chaap baith",flagged,Insult/Bullying,Hindi (Romanized)
+"g@ndu saale bhag yaha se",flagged,Insult/Bullying,Hindi (Romanized)
+"l@wde apna kaam kar",flagged,Insult/Bullying,Hindi (Romanized)
+"doxxed his personal address, let's raid his house",flagged,Harassment,English
+"corrupt committee will pay for cheating in elections",flagged,Harassment,English
+"tum jaison ko to joota marna chahiye",flagged,Insult/Bullying,Hindi (Romanized)
+"tere jaisa bhikari pehli baar dekha hai",flagged,Insult/Bullying,Hindi (Romanized)
+"Hello world, testing the new bot connectivity",safe,Other,English
+"Please submit your course feedback before Friday midnight",safe,Other,English
+"The hackathon registration link is now live",safe,Other,English
+"Looking forward to collaborating with everyone on this project",safe,Other,English
+"Congratulations on clearing the campus placement interview!",safe,Other,English
+"What is the deadline for submitting the workshop abstracts?",safe,Other,English
+"Please remember to mute your microphones during the presentation",safe,Other,English
+"Bhai coffee peene chale canteen me?",safe,Other,Hindi (Romanized)
+"Main thodi der me call karta hu abhi class me hu",safe,Other,Hindi (Romanized)
+

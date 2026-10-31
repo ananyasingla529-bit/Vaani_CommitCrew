@@ -1,0 +1,90 @@
+{
+  "timestamp": "2026-10-31T11:35:07.688619+00:00",
+  "total_evaluated": 89,
+  "true_positives": 54,
+  "true_negatives": 35,
+  "false_positives": 0,
+  "false_negatives": 0,
+  "metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "per_category": {
+    "Other": {
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "total": 35
+    },
+    "Harassment": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 9
+    },
+    "Threat": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 18
+    },
+    "Insult/Bullying": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 21
+    },
+    "Hate speech": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 3
+    },
+    "Sexual content": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 3
+    }
+  },
+  "per_language": {
+    "Hindi (Romanized)": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 39
+    },
+    "Hinglish": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 8
+    },
+    "Punjabi (Romanized)": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 15
+    },
+    "English": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "total": 27
+    }
+  },
+  "misclassified_count": 0,
+  "misclassified": []
+}

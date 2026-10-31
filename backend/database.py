@@ -7,7 +7,9 @@ import sqlite3
 import json
 import os
 from typing import List, Dict, Any, Optional
+from datetime import datetime, timezone, timedelta
 from seed_data import SEED_SOURCES, SEED_MESSAGES
+from db_brain import init_brain_db, get_scanned_count
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "vaani.db")
 
@@ -136,6 +138,7 @@ def init_db():
         conn.commit()
 
     conn.close()
+    init_brain_db()
 
 
 def row_to_message(row: sqlite3.Row) -> Dict[str, Any]:
@@ -288,22 +291,62 @@ def get_stats() -> Dict[str, Any]:
     cursor.execute("SELECT platform, COUNT(*) as cnt FROM messages GROUP BY platform ORDER BY cnt DESC")
     by_platform = [{"platform": r["platform"], "count": r["cnt"]} for r in cursor.fetchall()]
 
+    # Compute avg_review_time_mins from reviewed_at minus timestamp
+    cursor.execute("SELECT timestamp, reviewed_at FROM messages WHERE reviewed_at IS NOT NULL AND reviewed_at != ''")
+    review_rows = cursor.fetchall()
+    diffs = []
+    for r in review_rows:
+        try:
+            t1 = datetime.fromisoformat(r["timestamp"].replace("Z", "+00:00"))
+            t2 = datetime.fromisoformat(r["reviewed_at"].replace("Z", "+00:00"))
+            diff_min = (t2 - t1).total_seconds() / 60.0
+            if diff_min >= 0:
+                diffs.append(diff_min)
+        except Exception:
+            pass
+    avg_review_time = round(sum(diffs) / len(diffs), 1) if diffs else 4.8
+
+    # Flags over time for the last 7 days
+    cursor.execute("SELECT MAX(SUBSTR(timestamp, 1, 10)) FROM messages")
+    max_date_row = cursor.fetchone()
+    ref_date = datetime.now(timezone.utc).date()
+    if max_date_row and max_date_row[0]:
+        try:
+            parsed_max = datetime.strptime(max_date_row[0], "%Y-%m-%d").date()
+            if parsed_max > ref_date:
+                ref_date = parsed_max
+        except Exception:
+            pass
+
+    date_counts = {}
+    for i in range(6, -1, -1):
+        d = ref_date - timedelta(days=i)
+        iso_str = d.strftime("%Y-%m-%d")
+        label_str = d.strftime("%b %d")
+        date_counts[iso_str] = {"date": label_str, "flags": 0, "high": 0, "medium": 0, "low": 0}
+
+    cursor.execute("SELECT SUBSTR(timestamp, 1, 10) as dt, severity, COUNT(*) as cnt FROM messages GROUP BY dt, severity")
+    for r in cursor.fetchall():
+        dt = r["dt"]
+        sev = r["severity"]
+        cnt = r["cnt"]
+        if dt in date_counts:
+            date_counts[dt]["flags"] += cnt
+            if sev in ("high", "medium", "low"):
+                date_counts[dt][sev] += cnt
+
+    flags_over_time = list(date_counts.values())
     conn.close()
 
+    # Persistent messages_scanned counter
+    messages_scanned = get_scanned_count()
+
     return {
-        "messages_scanned": 18450,
+        "messages_scanned": messages_scanned,
         "messages_flagged": total_flagged,
         "high_severity_open": high_open,
-        "avg_review_time_mins": 4.8,
-        "flags_over_time": [
-            {"date": "Oct 25", "flags": 4, "high": 1, "medium": 2, "low": 1},
-            {"date": "Oct 26", "flags": 6, "high": 2, "medium": 3, "low": 1},
-            {"date": "Oct 27", "flags": 8, "high": 3, "medium": 3, "low": 2},
-            {"date": "Oct 28", "flags": 9, "high": 2, "medium": 5, "low": 2},
-            {"date": "Oct 29", "flags": 7, "high": 3, "medium": 3, "low": 1},
-            {"date": "Oct 30", "flags": 11, "high": 5, "medium": 4, "low": 2},
-            {"date": "Oct 31", "flags": 12, "high": 6, "medium": 4, "low": 2},
-        ],
+        "avg_review_time_mins": avg_review_time,
+        "flags_over_time": flags_over_time,
         "flags_by_category": by_category,
         "flags_by_language": by_language,
         "flags_by_platform": by_platform,
@@ -335,6 +378,34 @@ def get_repeat_targets() -> List[Dict[str, Any]]:
         med_cnt = sum(1 for m in msgs if m["severity"] == "medium")
         low_cnt = sum(1 for m in msgs if m["severity"] == "low")
 
+        # Pile on detection:
+        # pile_on_detected = true when 3+ distinct senders target the same user within 24h,
+        # OR the same user is targeted on 2+ platforms
+        msg_tuples = []
+        for m in msgs:
+            try:
+                ts_dt = datetime.fromisoformat(m["timestamp"].replace("Z", "+00:00"))
+                sender = m.get("sender_id") or m.get("sender_name") or "unknown"
+                msg_tuples.append((ts_dt, sender))
+            except Exception:
+                pass
+        msg_tuples.sort(key=lambda x: x[0])
+
+        has_24h_pile_on = False
+        for i in range(len(msg_tuples)):
+            t_start = msg_tuples[i][0]
+            senders = {msg_tuples[i][1]}
+            for j in range(i + 1, len(msg_tuples)):
+                if (msg_tuples[j][0] - t_start).total_seconds() <= 86400:
+                    senders.add(msg_tuples[j][1])
+                else:
+                    break
+            if len(senders) >= 3:
+                has_24h_pile_on = True
+                break
+
+        pile_on_detected = (len(platforms) >= 2) or has_24h_pile_on
+
         results.append({
             "target_user": target,
             "incident_count": len(msgs),
@@ -348,7 +419,7 @@ def get_repeat_targets() -> List[Dict[str, Any]]:
             "first_seen": timestamps[0],
             "last_seen": timestamps[-1],
             "sample_messages": msgs,
-            "pile_on_detected": len(msgs) >= 3 and len(channels) >= 2
+            "pile_on_detected": pile_on_detected
         })
 
     results.sort(key=lambda x: x["incident_count"], reverse=True)
