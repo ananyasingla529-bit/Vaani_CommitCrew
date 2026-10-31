@@ -29,6 +29,7 @@ class TelegramConnector(Connector):
             or cfg["token"]
         )
         self.mock_mode = cfg["mock_mode"] if (config is None or "mock_mode" not in config) else bool(config["mock_mode"])
+        self.telegram_live = os.getenv("TELEGRAM_LIVE", "").lower() == "true"
         self.is_real_token = cfg["is_real_token"]
         self.api_base = f"https://api.telegram.org/bot{self.bot_token}" if self.bot_token else ""
         self.bot_username: Optional[str] = None
@@ -36,11 +37,12 @@ class TelegramConnector(Connector):
 
     def is_real_mode_available(self) -> bool:
         """
-        Real mode is used when MOCK_MODE=False and token is real (not ending in _DEMO or _PLACEHOLDER).
-        No fake data fallback when real mode is active.
+        Real mode is used when (TELEGRAM_LIVE=True or MOCK_MODE=False) and token is real.
         """
+        live_enabled = self.telegram_live or (not self.mock_mode)
         return (
-            not self.mock_mode
+            live_enabled
+            and self.is_real_token
             and bool(self.bot_token)
             and ":" in self.bot_token
             and not self.bot_token.endswith("_DEMO")

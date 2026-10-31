@@ -18,11 +18,14 @@ DIGEST_QUEUE: List[Dict[str, Any]] = []
 
 def is_real_telegram_available() -> bool:
     mock_mode = os.getenv("MOCK_MODE", "True").lower() == "true"
+    telegram_live = os.getenv("TELEGRAM_LIVE", "").lower() == "true"
     token = os.getenv("TELEGRAM_BOT_TOKEN")
+    live_enabled = telegram_live or (not mock_mode)
     return (
-        not mock_mode
+        live_enabled
         and bool(token)
         and not token.endswith("_DEMO")
+        and not token.endswith("_PLACEHOLDER")
         and ":" in token
     )
 
