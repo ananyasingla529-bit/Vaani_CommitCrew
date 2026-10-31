@@ -8,10 +8,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List
 from datetime import datetime, timezone
 import os
-from dotenv import load_dotenv
-
-# Load environment configuration
-load_dotenv()
+try:
+    from dotenv import load_dotenv  # type: ignore
+    dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path=dotenv_path)
+    else:
+        load_dotenv()
+except (ImportError, PermissionError):
+    pass
 
 import database as db
 from models import (
@@ -28,6 +33,7 @@ from models import (
 from services.classifier import classify_text
 from services.alerts import send_high_severity_alert, get_pending_digest
 from services.ingest_worker import sync_all_sources
+from routers.brain import router as brain_router
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -44,6 +50,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(brain_router)
 
 
 @app.on_event("startup")
@@ -223,7 +231,7 @@ def classify_endpoint(payload: ClassifyRequest):
     Accepts arbitrary text in Hindi, Hinglish, Punjabi, or English.
     Returns normalized transliteration, category, severity, and rationale.
     """
-    result = classify_text(payload.text, payload.target_user)
+    result = classify_text(payload.text, payload.target_user, payload.context)
     return result
 
 

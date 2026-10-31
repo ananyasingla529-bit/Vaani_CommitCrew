@@ -70,6 +70,7 @@ class SourceCreateRequest(BaseModel):
 class ClassifyRequest(BaseModel):
     text: str
     target_user: Optional[str] = None
+    context: Optional[List[str]] = None
 
 
 class ClassifyResponse(BaseModel):
@@ -81,6 +82,7 @@ class ClassifyResponse(BaseModel):
     target_user: Optional[str] = None
     confidence: float
     flagged: bool
+    provider: Optional[str] = None
 
 
 class DashboardStats(BaseModel):
