@@ -197,26 +197,33 @@ export const ConnectedSourcesPage: React.FC<ConnectedSourcesPageProps> = ({
                 <p>
                   To enable automated classification on Telegram, invite the official Vaani bot to your group and promote it with message deletion and invite link rights.
                 </p>
-                <div className="p-3 bg-white border border-[#D0C7B3] rounded-xl font-mono text-[11px] text-[#292728]">
-                  Bot Username: <span className="text-[#434428] font-bold">@VaaniSafetyBot</span>
-                </div>
-                <div className="pt-2 flex items-center gap-3">
-                  <a
-                    href="https://t.me/VaaniSafetyBot?startgroup=true"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#229ED9] hover:bg-[#1E88E5] text-white rounded-xl font-semibold shadow-2xs transition-colors"
-                  >
-                    <span>Add Bot to Telegram Group</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                  <button
-                    onClick={handleSimulateVerification}
-                    className="px-4 py-2 bg-[#434428] hover:bg-[#292728] text-[#F1F1EC] rounded-xl font-semibold transition-colors cursor-pointer shadow-2xs"
-                  >
-                    <span>I Have Added the Bot (Verify Channel)</span>
-                  </button>
-                </div>
+                {(() => {
+                  const tgUser = ((import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string) || 'VaaniSafetyBot').replace(/^@/, '');
+                  return (
+                    <>
+                      <div className="p-3 bg-white border border-[#D0C7B3] rounded-xl font-mono text-[11px] text-[#292728]">
+                        Bot Username: <span className="text-[#434428] font-bold">@{tgUser}</span>
+                      </div>
+                      <div className="pt-2 flex items-center gap-3">
+                        <a
+                          href={`https://t.me/${tgUser}?startgroup=true`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#229ED9] hover:bg-[#1E88E5] text-white rounded-xl font-semibold shadow-2xs transition-colors"
+                        >
+                          <span>Add Bot to Telegram Group</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                        <button
+                          onClick={handleSimulateVerification}
+                          className="px-4 py-2 bg-[#434428] hover:bg-[#292728] text-[#F1F1EC] rounded-xl font-semibold transition-colors cursor-pointer shadow-2xs"
+                        >
+                          <span>I Have Added the Bot (Verify Channel)</span>
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
 

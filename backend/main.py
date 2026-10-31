@@ -74,7 +74,7 @@ app.include_router(ops_router)
 def startup_event():
     """Initializes SQLite database and background tasks for continuous ingestion and Discord gateway."""
     db.init_db()
-    if os.getenv("ENABLE_BACKGROUND_WORKER", "False").lower() == "true":
+    if os.getenv("ENABLE_BACKGROUND_WORKER", "False").lower() == "true" or os.getenv("TELEGRAM_LIVE", "False").lower() == "true":
         start_background_worker()
     start_discord_gateway()
     cfg = get_telegram_runtime_config(log_startup=True)
