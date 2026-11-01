@@ -16,7 +16,7 @@ import {
 } from '../data/mockData';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true' || (typeof window !== 'undefined' && sessionStorage.getItem('vaani_use_mock_override') === 'true');
 
 // In-memory state with localStorage persistence for pure mock mode
 const STORAGE_KEY_MESSAGES = 'vaani_messages_v1';

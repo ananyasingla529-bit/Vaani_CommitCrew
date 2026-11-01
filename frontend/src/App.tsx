@@ -58,7 +58,11 @@ export function App() {
     } catch (err) {
       console.error('Error loading dashboard data:', err);
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      setErrorBanner(`Cannot reach the Vaani backend at ${apiUrl}. Retrying...`);
+      const isMixedContent = typeof window !== 'undefined' && window.location.protocol === 'https:' && apiUrl.startsWith('http://');
+      const msg = isMixedContent
+        ? `Backend URL (${apiUrl}) is insecure HTTP while Vercel is HTTPS. Set VITE_API_URL to your deployed HTTPS backend (e.g. Render) in Vercel settings, or click Explore in Demo Mode below.`
+        : `Cannot reach the Vaani backend at ${apiUrl}. Retrying...`;
+      setErrorBanner(msg);
     } finally {
       setIsRefreshing(false);
     }
@@ -216,6 +220,33 @@ export function App() {
                 onNavigateToFeed={handleNavigateToFeed}
                 onSelectMessage={handleSelectMessageFromElsewhere}
               />
+            ) : errorBanner ? (
+              <div className="flex flex-col items-center justify-center py-20 text-[#6B6860] text-center max-w-lg mx-auto px-4">
+                <div className="w-12 h-12 rounded-full bg-[#FDF2F0] border border-[#F5CAC4] text-[#B93829] flex items-center justify-center mb-4 text-xl font-bold shadow-2xs">
+                  !
+                </div>
+                <p className="text-base font-bold text-[#292728]">Backend Connection Notice</p>
+                <p className="text-xs text-[#6B6860] mt-2 leading-relaxed">
+                  {errorBanner}
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    onClick={() => loadData()}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#434428] text-[#F1F1EC] hover:bg-[#292728] transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Retry Connection
+                  </button>
+                  <button
+                    onClick={() => {
+                      sessionStorage.setItem('vaani_use_mock_override', 'true');
+                      window.location.reload();
+                    }}
+                    className="px-4 py-2 text-xs font-semibold rounded-xl border border-[#D0C7B3] bg-white text-[#434428] hover:bg-[#F1F1EC] transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Explore in Demo / Mock Mode
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-24 text-[#6B6860]">
                 <div className="w-8 h-8 border-2 border-[#434428] border-t-transparent rounded-full animate-spin mb-4" />
