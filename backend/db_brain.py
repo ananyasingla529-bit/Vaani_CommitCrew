@@ -9,7 +9,7 @@ import os
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "vaani.db")
+DB_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "vaani.db"))
 
 
 def get_brain_db_connection() -> sqlite3.Connection:

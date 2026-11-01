@@ -11,7 +11,7 @@ from datetime import datetime, timezone, timedelta
 from seed_data import SEED_SOURCES, SEED_MESSAGES
 from db_brain import init_brain_db, get_scanned_count
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "vaani.db")
+DB_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "vaani.db"))
 
 
 def get_db_connection() -> sqlite3.Connection:

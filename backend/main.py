@@ -51,17 +51,24 @@ app = FastAPI(
     version="1.0.4",
 )
 
-# CORS configuration restricted to FRONTEND_ORIGIN
-frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
-auth_disabled = os.getenv("AUTH_DISABLED", "True").lower() == "true"
-
-origins = [frontend_origin, "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]
-if auth_disabled:
-    origins = ["*"]
+# CORS configuration supporting local dev and Vercel cloud deployments
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "")
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+if frontend_origin:
+    for o in frontend_origin.split(","):
+        clean = o.strip()
+        if clean and clean not in allowed_origins:
+            allowed_origins.append(clean)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=allowed_origins if allowed_origins else ["*"],
+    allow_origin_regex=r"^https://.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

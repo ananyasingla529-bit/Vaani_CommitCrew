@@ -10,7 +10,7 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "vaani.db")
+DB_PATH = os.getenv("DATABASE_PATH", os.path.join(os.path.dirname(__file__), "vaani.db"))
 
 
 def get_ops_db_connection() -> sqlite3.Connection:
