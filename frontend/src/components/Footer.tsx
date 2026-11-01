@@ -1,6 +1,8 @@
 import React from 'react';
 import { ShieldCheck, Info } from 'lucide-react';
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
 export const Footer: React.FC = () => {
   return (
     <footer className="mt-auto border-t border-[#D0C7B3]/70 bg-white/70 py-4 px-8 text-xs text-[#6B6860]">
@@ -13,10 +15,12 @@ export const Footer: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-4 text-[#6B6860] shrink-0">
-          <span className="inline-flex items-center gap-1.5 font-medium text-[#434428]">
-            <Info className="w-3.5 h-3.5 text-[#939474]" />
-            <span>MOCK_MODE Active</span>
-          </span>
+          {USE_MOCK && (
+            <span className="inline-flex items-center gap-1.5 font-medium text-[#434428]">
+              <Info className="w-3.5 h-3.5 text-[#939474]" />
+              <span>MOCK_MODE Active</span>
+            </span>
+          )}
           <span className="text-[#D0C7B3]">•</span>
           <span>v1.0.4</span>
         </div>

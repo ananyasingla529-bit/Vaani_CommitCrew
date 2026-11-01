@@ -4,7 +4,7 @@ Implements update ingestion with persisted DB offset, dynamic normalization,
 /report command force-flagging, and human-in-the-loop moderation actions.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 import os
 import re
@@ -25,6 +25,51 @@ class TelegramConnector(Connector):
         self.mock_mode = os.getenv("MOCK_MODE", "True").lower() == "true"
         self.telegram_live = os.getenv("TELEGRAM_LIVE", "").lower() == "true"
         self.api_base = f"https://api.telegram.org/bot{self.bot_token}" if self.bot_token else ""
+
+    def fetch_updates_raw(
+        self,
+        offset: Optional[int] = None,
+        limit: int = 50,
+        timeout: int = 30,
+        allowed_updates: Optional[List[str]] = None
+    ) -> Tuple[int, List[Dict[str, Any]]]:
+        """
+        Long polls getUpdates with timeout and allowed_updates.
+        Returns (status_code, updates_list).
+        Handles 409 Conflict gracefully.
+        """
+        if not self.is_real_mode_available():
+            return 200, []
+
+        if allowed_updates is None:
+            allowed_updates = ["message", "edited_message", "channel_post", "my_chat_member"]
+
+        params: Dict[str, Any] = {
+            "limit": limit,
+            "timeout": timeout,
+            "allowed_updates": allowed_updates,
+        }
+        if offset is not None and offset > 0:
+            params["offset"] = offset
+
+        try:
+            res = requests.post(
+                f"{self.api_base}/getUpdates",
+                json=params,
+                timeout=timeout + 5
+            )
+            if res.status_code == 200:
+                data = res.json()
+                return 200, data.get("result", [])
+            elif res.status_code == 409:
+                print("[Telegram] 409 Conflict: another getUpdates process or webhook is running. Waiting...")
+                return 409, []
+            else:
+                print(f"[Telegram] getUpdates returned status {res.status_code}: {res.text}")
+                return res.status_code, []
+        except Exception as e:
+            print(f"[Telegram] Error polling getUpdates: {e}")
+            return 500, []
 
     def is_real_mode_available(self) -> bool:
         live_enabled = self.telegram_live or (not self.mock_mode)

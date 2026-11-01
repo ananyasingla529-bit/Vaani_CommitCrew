@@ -208,13 +208,21 @@ export function App() {
         )}
 
         <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
-          {currentTab === 'overview' && stats && (
-            <OverviewPage
-              stats={stats}
-              recentUrgentMessages={messages.filter((m) => m.severity === 'high')}
-              onNavigateToFeed={handleNavigateToFeed}
-              onSelectMessage={handleSelectMessageFromElsewhere}
-            />
+          {currentTab === 'overview' && (
+            stats ? (
+              <OverviewPage
+                stats={stats}
+                recentUrgentMessages={messages.filter((m) => m.severity === 'high')}
+                onNavigateToFeed={handleNavigateToFeed}
+                onSelectMessage={handleSelectMessageFromElsewhere}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center py-24 text-[#6B6860]">
+                <div className="w-8 h-8 border-2 border-[#434428] border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm font-medium text-[#292728]">Connecting to Vaani backend...</p>
+                <p className="text-xs text-[#939474] mt-1">Fetching live moderation metrics and sources</p>
+              </div>
+            )
           )}
 
           {currentTab === 'feed' && (
