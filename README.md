@@ -192,7 +192,7 @@ Follow this step-by-step path to experience the entire moderation workflow:
    `https://t.me/delhi_tech_students`
 4. Observe the instant platform recognition card identifying Telegram.
 5. Click **Proceed to Authorization**:
-   - Review the Telegram bot invite instructions (`t.me/VaaniSafetyBot?startgroup=true`).
+   - Review the Telegram bot invite instructions (`t.me/VaaniTestbot?startgroup=true`).
 6. Click **I Have Added the Bot (Verify Channel)**:
    - Watch the 3-step animated verification polling process.
    - The new channel will be verified and added to the list.

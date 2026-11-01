@@ -198,7 +198,7 @@ export const ConnectedSourcesPage: React.FC<ConnectedSourcesPageProps> = ({
                   To enable automated classification on Telegram, invite the official Vaani bot to your group and promote it with message deletion and invite link rights.
                 </p>
                 {(() => {
-                  const tgUser = ((import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string) || 'VaaniSafetyBot').replace(/^@/, '');
+                  const tgUser = ((import.meta.env.VITE_TELEGRAM_BOT_USERNAME as string) || 'VaaniTestbot').replace(/^@/, '');
                   return (
                     <>
                       <div className="p-3 bg-white border border-[#D0C7B3] rounded-xl font-mono text-[11px] text-[#292728]">

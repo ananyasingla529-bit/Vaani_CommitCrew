@@ -1,8 +1,6 @@
 import React from 'react';
 import { ShieldAlert, CheckCircle, RefreshCw, GitBranch } from 'lucide-react';
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
-
 interface HeaderProps {
   title: string;
   subtitle?: string;
@@ -10,7 +8,6 @@ interface HeaderProps {
   onRefresh?: () => void;
   isRefreshing?: boolean;
   activeBranch?: string;
-  lastUpdated?: string;
   // Kept for backward compatibility if passed
   userEmail?: string;
   userRole?: string;
@@ -26,7 +23,6 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   isRefreshing = false,
   activeBranch = 'main',
-  lastUpdated,
 }) => {
   return (
     <header className="h-18 border-b border-[#D0C7B3]/70 bg-white/80 backdrop-blur-md px-8 flex items-center justify-between shrink-0 sticky top-0 z-20">
@@ -36,13 +32,6 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Last updated indicator */}
-        {lastUpdated && (
-          <div className="hidden md:inline-flex items-center px-3 py-1 rounded-full border border-[#D0C7B3] bg-[#F1F1EC] text-[#434428] text-xs font-mono shadow-2xs">
-            Last updated: {lastUpdated}
-          </div>
-        )}
-
         {/* Active Branch Pill */}
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#D0C7B3] bg-[#F1F1EC] text-[#434428] text-xs font-mono font-medium shadow-2xs">
           <GitBranch className="w-3.5 h-3.5 text-[#939474]" />
@@ -50,12 +39,10 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mock Mode Pill */}
-        {USE_MOCK && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#939474]/40 bg-[#939474]/15 text-[#434428] text-xs font-medium shadow-2xs">
-            <CheckCircle className="w-3.5 h-3.5 text-[#434428]" />
-            <span>MOCK_MODE: ON</span>
-          </div>
-        )}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#939474]/40 bg-[#939474]/15 text-[#434428] text-xs font-medium shadow-2xs">
+          <CheckCircle className="w-3.5 h-3.5 text-[#434428]" />
+          <span>MOCK_MODE: ON</span>
+        </div>
 
         {/* High severity indicator */}
         {urgentCount > 0 && (
